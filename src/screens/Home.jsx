@@ -1,20 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
-import L from 'leaflet'
 import { getProfile, getActiveSession, setActiveSession } from '../utils/storage'
 import { requestPermission, notify } from '../utils/notifications'
+import { TILE_URL, TILE_ATTRIBUTION, userIcon } from '../utils/map'
 import BottomNav from '../components/BottomNav'
+import PlateBadge from '../components/PlateBadge'
+import { IconPlay } from '../components/Icons'
 
 const DEFAULT_CENTER = [51.9225, 4.47917] // Rotterdam
-
-// Blue dot marker for user location
-const userIcon = L.divIcon({
-  className: '',
-  html: `<div style="width:14px;height:14px;background:#1B45C8;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>`,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-})
 
 function FlyToLocation({ position }) {
   const map = useMap()
@@ -32,10 +26,9 @@ export default function Home() {
 
   useEffect(() => {
     const p = getProfile()
-    if (!p) { navigate('/onboarding', { replace: true }); return }
+    if (!p) { navigate('/login', { replace: true }); return }
     if (getActiveSession()) { navigate('/session', { replace: true }); return }
     setProfile(p)
-    requestPermission()
 
     navigator.geolocation?.getCurrentPosition(
       ({ coords }) => setLocation([coords.latitude, coords.longitude]),
@@ -43,8 +36,9 @@ export default function Home() {
     )
   }, [])
 
-  function handleStart() {
+  async function handleStart() {
     setStarting(true)
+    await requestPermission()
     setActiveSession({
       plate: profile.plate,
       startTime: new Date().toISOString(),
@@ -58,44 +52,45 @@ export default function Home() {
   if (!profile) return null
 
   return (
-    <div className="screen">
-      <header className="header">
-        <span className="header-logo">P</span>
-        <span className="header-title">ParkWise</span>
-      </header>
-
-      <div className="map-wrap">
+    <div className="screen screen-home">
+      <div className="map-full">
         <MapContainer
           center={DEFAULT_CENTER}
           zoom={13}
-          style={{ height: '100%', width: '100%' }}
           zoomControl={false}
-          attributionControl={false}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
           <FlyToLocation position={location} />
           {location && <Marker position={location} icon={userIcon} />}
         </MapContainer>
       </div>
 
-      <div className="home-bottom">
+      <div className="topbar">
+        <div className="chip-logo"><span>P</span>ParkWise</div>
+        <div className="avatar">{profile.name?.charAt(0).toUpperCase() || 'P'}</div>
+      </div>
+
+      <div className="sheet">
+        <div className="sheet-handle" />
         <div className="vehicle-row">
-          <div className="vehicle-info">
-            <span className="vehicle-label">Voertuig</span>
-            <span className="vehicle-plate">{profile.plate}</span>
+          <div className="vehicle-id">
+            <PlateBadge plate={profile.plate} />
+            <div className="vehicle-meta">
+              <span className="vehicle-label">Voertuig</span>
+              <span className="vehicle-name">{profile.name}</span>
+            </div>
           </div>
-          <span className="vehicle-name">{profile.name}</span>
         </div>
         <button
-          className="btn-yellow btn-large"
+          className="btn btn-yellow"
           onClick={handleStart}
           disabled={starting}
         >
-          {starting ? 'Bezig…' : '▶  Start Parkeren'}
+          <IconPlay size={16} />
+          {starting ? 'Bezig…' : 'Start parkeren'}
         </button>
+        <BottomNav active="home" />
       </div>
-
-      <BottomNav active="home" />
     </div>
   )
 }

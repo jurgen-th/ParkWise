@@ -2,9 +2,17 @@ const PROFILE_KEY = 'pw_profile'
 const SESSIONS_KEY = 'pw_sessions'
 const ACTIVE_KEY = 'pw_active'
 
+function read(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : fallback
+  } catch {
+    return fallback
+  }
+}
+
 export function getProfile() {
-  const raw = localStorage.getItem(PROFILE_KEY)
-  return raw ? JSON.parse(raw) : null
+  return read(PROFILE_KEY, null)
 }
 
 export function saveProfile(profile) {
@@ -12,8 +20,7 @@ export function saveProfile(profile) {
 }
 
 export function getSessions() {
-  const raw = localStorage.getItem(SESSIONS_KEY)
-  return raw ? JSON.parse(raw) : []
+  return read(SESSIONS_KEY, [])
 }
 
 export function addSession(session) {
@@ -24,8 +31,7 @@ export function addSession(session) {
 }
 
 export function getActiveSession() {
-  const raw = localStorage.getItem(ACTIVE_KEY)
-  return raw ? JSON.parse(raw) : null
+  return read(ACTIVE_KEY, null)
 }
 
 export function setActiveSession(session) {

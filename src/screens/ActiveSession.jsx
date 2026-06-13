@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import { getActiveSession, clearActiveSession, addSession } from '../utils/storage'
 import { notify } from '../utils/notifications'
 import { formatDuration } from '../utils/pdf'
+import { TILE_URL, TILE_ATTRIBUTION, parkIcon } from '../utils/map'
+import PlateBadge from '../components/PlateBadge'
+import { IconStop } from '../components/Icons'
 
 export default function ActiveSession() {
   const navigate  = useNavigate()
@@ -29,17 +33,19 @@ export default function ActiveSession() {
     setStopping(true)
     clearInterval(intervalRef.current)
 
-    const endTime = new Date().toISOString()
+    const startMs = new Date(session.startTime).getTime()
+    const endMs = Date.now()
+    const duration = Math.floor((endMs - startMs) / 1000)
     const completed = {
       ...session,
-      id: new Date(session.startTime).getTime(),
-      endTime,
-      duration: elapsed,
+      id: startMs,
+      endTime: new Date(endMs).toISOString(),
+      duration,
     }
 
     clearActiveSession()
     addSession(completed)
-    notify('Parkeren gestopt', `Duur: ${formatDuration(elapsed)}`)
+    notify('Parkeren gestopt', `Duur: ${formatDuration(duration)}`)
     navigate('/', { replace: true })
   }
 
@@ -49,40 +55,57 @@ export default function ActiveSession() {
     hour: '2-digit', minute: '2-digit',
   })
 
-  // Format as HH:MM:SS for the big display
   const h   = Math.floor(elapsed / 3600)
   const m   = Math.floor((elapsed % 3600) / 60)
   const s   = elapsed % 60
   const pad = v => String(v).padStart(2, '0')
   const timerStr = `${pad(h)}:${pad(m)}:${pad(s)}`
 
+  const parked = session.lat != null && session.lon != null
+
   return (
     <div className="screen screen-session">
-      <header className="header header-dark">
-        <span className="header-logo">P</span>
-        <span className="header-title">ParkWise</span>
-      </header>
-
       <div className="session-body">
 
-        <div className="session-status">
+        <div className="status-pill">
           <span className="pulse-dot" />
           <span>Actief parkeren</span>
         </div>
 
-        <div className="session-card">
-          <div className="session-plate">{session.plate}</div>
-          <div className="session-timer">{timerStr}</div>
-          <div className="session-since">Gestart om {startStr}</div>
-        </div>
+        <div className="session-timer">{timerStr}</div>
+        <div className="session-since">Gestart om {startStr}</div>
 
-        <button
-          className="btn-red btn-large"
-          onClick={handleStop}
-          disabled={stopping}
-        >
-          {stopping ? 'Stoppen…' : '■  Stop Parkeren'}
-        </button>
+        <PlateBadge plate={session.plate} large />
+
+        {parked && (
+          <div className="minimap">
+            <MapContainer
+              center={[session.lat, session.lon]}
+              zoom={16}
+              zoomControl={false}
+              dragging={false}
+              scrollWheelZoom={false}
+              doubleClickZoom={false}
+              touchZoom={false}
+              keyboard={false}
+            >
+              <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
+              <Marker position={[session.lat, session.lon]} icon={parkIcon} />
+            </MapContainer>
+            <span className="minimap-chip">Geparkeerd hier</span>
+          </div>
+        )}
+
+        <div className="session-stop">
+          <button
+            className="btn btn-red"
+            onClick={handleStop}
+            disabled={stopping}
+          >
+            <IconStop size={16} />
+            {stopping ? 'Stoppen…' : 'Stop parkeren'}
+          </button>
+        </div>
 
       </div>
     </div>
