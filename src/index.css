@@ -79,6 +79,45 @@ button {
   bottom: 218px;
 }
 
+/* Tariff legend / demo disclaimer over the map */
+.zone-legend {
+  position: absolute;
+  top: calc(64px + env(safe-area-inset-top));
+  right: 12px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(15, 30, 86, 0.12);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.zone-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zone-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.zone-legend em {
+  margin-top: 2px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
 .screen-home {
   position: relative;
 }

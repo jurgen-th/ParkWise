@@ -6,6 +6,7 @@ import { requestPermission, notify } from '../utils/notifications'
 import { TILE_URL, TILE_ATTRIBUTION, userIcon } from '../utils/map'
 import BottomNav from '../components/BottomNav'
 import PlateBadge from '../components/PlateBadge'
+import ParkingZones from '../components/ParkingZones'
 import { IconPlay } from '../components/Icons'
 
 const DEFAULT_CENTER = [51.9225, 4.47917] // Rotterdam
@@ -60,9 +61,16 @@ export default function Home() {
           zoomControl={false}
         >
           <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
+          <ParkingZones />
           <FlyToLocation position={location} />
           {location && <Marker position={location} icon={userIcon} />}
         </MapContainer>
+        <div className="zone-legend">
+          <span><i style={{ background: '#4ADE80' }} />Goedkoop</span>
+          <span><i style={{ background: '#FBBF24' }} />Gemiddeld</span>
+          <span><i style={{ background: '#E5484D' }} />Centrum</span>
+          <em>Tarieven indicatief · demo</em>
+        </div>
       </div>
 
       <div className="topbar">
