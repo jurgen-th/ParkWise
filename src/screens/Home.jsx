@@ -84,9 +84,10 @@ export default function Home() {
           {location && <Marker position={location} icon={userIcon} />}
         </MapContainer>
         <div className="zone-legend">
-          <span><i style={{ background: '#4ADE80' }} />Goedkoop</span>
-          <span><i style={{ background: '#FBBF24' }} />Gemiddeld</span>
-          <span><i style={{ background: '#E5484D' }} />Centrum</span>
+          <span><i style={{ background: '#4ADE80' }} />tot €1</span>
+          <span><i style={{ background: '#FBBF24' }} />€1–2,50</span>
+          <span><i style={{ background: '#FB923C' }} />€2,50–4</span>
+          <span><i style={{ background: '#E5484D' }} />€4+</span>
           <em>Tarieven indicatief · demo</em>
         </div>
       </div>
