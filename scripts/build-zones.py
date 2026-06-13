@@ -149,10 +149,16 @@ def main():
 
     features, priced = [], 0
     for g in geometry:
+        aid = g["areaid"]
+        # Keep only the numbered street-tariff zones. Non-numeric ids are
+        # administrative umbrellas (Sector NN, ZE Zone, Zone_N) that blanket the
+        # whole city with no tariff -- they grey out and intercept clicks on the
+        # real zones underneath.
+        if not aid.isdigit():
+            continue
         geom = parse_wkt(g.get("areageometryastext", ""))
         if not geom:
             continue
-        aid = g["areaid"]
         rid = area_to_reg.get(aid)
         code = reg_to_fare.get(rid, (None, None))[0] if rid else None
         rate = fare_rate.get(code)

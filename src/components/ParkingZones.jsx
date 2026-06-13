@@ -12,11 +12,13 @@ function colorFor(eur) {
 }
 
 function style(feature) {
+  const c = colorFor(feature.properties.eurPerHour)
   return {
-    color: colorFor(feature.properties.eurPerHour),
-    weight: 1,
-    fillOpacity: 0.28,
-    opacity: 0.7,
+    color: c,
+    weight: 2,
+    fillColor: c,
+    fillOpacity: 0.35,
+    opacity: 0.95,
   }
 }
 
