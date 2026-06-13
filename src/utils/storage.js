@@ -1,6 +1,9 @@
 const PROFILE_KEY = 'pw_profile'
 const SESSIONS_KEY = 'pw_sessions'
 const ACTIVE_KEY = 'pw_active'
+const SETTINGS_KEY = 'pw_settings'
+
+const DEFAULT_SETTINGS = { location: true }
 
 function read(key, fallback) {
   try {
@@ -42,8 +45,19 @@ export function clearActiveSession() {
   localStorage.removeItem(ACTIVE_KEY)
 }
 
+export function getSettings() {
+  return { ...DEFAULT_SETTINGS, ...read(SETTINGS_KEY, {}) }
+}
+
+export function saveSettings(patch) {
+  const next = { ...getSettings(), ...patch }
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
+  return next
+}
+
 export function clearAllData() {
   localStorage.removeItem(PROFILE_KEY)
   localStorage.removeItem(SESSIONS_KEY)
   localStorage.removeItem(ACTIVE_KEY)
+  localStorage.removeItem(SETTINGS_KEY)
 }

@@ -45,8 +45,8 @@ export default function ActiveSession() {
 
     clearActiveSession()
     addSession(completed)
-    notify('Parkeren gestopt', `Duur: ${formatDuration(duration)}`)
     navigate('/', { replace: true })
+    notify('Parkeren gestopt', `Duur: ${formatDuration(duration)}`)
   }
 
   if (!session) return null

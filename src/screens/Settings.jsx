@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getProfile, saveProfile, clearAllData } from '../utils/storage'
+import { getProfile, saveProfile, clearAllData, getSettings, saveSettings } from '../utils/storage'
 import BottomNav from '../components/BottomNav'
 import { IconUser, IconMail } from '../components/Icons'
 
@@ -10,6 +10,8 @@ export default function Settings() {
   const [email, setEmail] = useState('')
   const [plate, setPlate] = useState('')
   const [saved, setSaved] = useState(false)
+  const [locationOn, setLocationOn] = useState(false)
+  const [locBlocked, setLocBlocked] = useState(false)
 
   useEffect(() => {
     const p = getProfile()
@@ -17,7 +19,31 @@ export default function Settings() {
     setName(p.name)
     setEmail(p.email || '')
     setPlate(p.plate)
+    setLocationOn(getSettings().location)
   }, [])
+
+  async function toggleLocation() {
+    if (locationOn) {
+      saveSettings({ location: false })
+      setLocationOn(false)
+      return
+    }
+    // Turning on: trigger the browser's own location prompt. A web app can't
+    // grant OS/browser permission itself — if the browser blocks it, say so.
+    const granted = await new Promise(resolve => {
+      if (!navigator.geolocation) return resolve(false)
+      navigator.geolocation.getCurrentPosition(
+        () => resolve(true), () => resolve(false), { timeout: 8000 }
+      )
+    })
+    if (granted) {
+      saveSettings({ location: true })
+      setLocationOn(true)
+      setLocBlocked(false)
+    } else {
+      setLocBlocked(true)
+    }
+  }
 
   function handleSave() {
     if (!name.trim() || !plate.trim()) return
@@ -89,6 +115,34 @@ export default function Settings() {
           <button className="btn btn-yellow" onClick={handleSave}>
             {saved ? '✓  Opgeslagen' : 'Opslaan'}
           </button>
+        </div>
+
+        <div className="card">
+          <h2 className="card-title">Toestemmingen</h2>
+          <div className="toggle-row">
+            <div className="toggle-info">
+              <span className="toggle-label">Locatie</span>
+              <span className="toggle-desc">
+                Gebruik je locatie om je parkeerplek op de kaart te tonen.
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={locationOn}
+              aria-label="Locatie"
+              className={`switch ${locationOn ? 'switch-on' : ''}`}
+              onClick={toggleLocation}
+            >
+              <span className="switch-knob" />
+            </button>
+          </div>
+          {locBlocked && (
+            <p className="card-desc" style={{ marginTop: 12, marginBottom: 0 }}>
+              Locatie is geblokkeerd in je browserinstellingen. Schakel het daar in
+              om deze functie te gebruiken.
+            </p>
+          )}
         </div>
 
         <div className="card card-danger">

@@ -628,6 +628,62 @@ button {
 
 .card-danger { border-color: #ffd6d6; }
 
+/* ─── Toggle row / switch ────────────────────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.toggle-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.toggle-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.switch {
+  flex-shrink: 0;
+  width: 50px;
+  height: 30px;
+  border-radius: 999px;
+  border: none;
+  background: var(--field);
+  padding: 3px;
+  display: flex;
+  transition: background 0.18s ease;
+}
+
+.switch-on {
+  background: var(--blue);
+}
+
+.switch-knob {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: 0 1px 3px rgba(15, 30, 86, 0.3);
+  transition: transform 0.18s ease;
+}
+
+.switch-on .switch-knob {
+  transform: translateX(20px);
+}
+
 /* ─── Forms ──────────────────────────────────────────────────── */
 .form-group {
   margin-bottom: 12px;

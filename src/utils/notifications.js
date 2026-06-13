@@ -7,5 +7,18 @@ export async function requestPermission() {
 
 export function notify(title, body) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return
-  new Notification(title, { body, icon: './icon.svg' })
+  // Android (and installed iOS PWAs) forbid `new Notification()` — it throws an
+  // "illegal constructor" error and would block whatever runs after the call.
+  // Prefer the service worker, fall back to the constructor, and never throw.
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready
+        .then(reg => reg.showNotification(title, { body, icon: './icon.svg' }))
+        .catch(() => {})
+    } else {
+      new Notification(title, { body, icon: './icon.svg' })
+    }
+  } catch {
+    /* notifications must never break the calling flow */
+  }
 }

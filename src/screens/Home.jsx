@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
-import { getProfile, getActiveSession, setActiveSession } from '../utils/storage'
+import { getProfile, getActiveSession, setActiveSession, getSettings } from '../utils/storage'
 import { requestPermission, notify } from '../utils/notifications'
 import { TILE_URL, TILE_ATTRIBUTION, userIcon } from '../utils/map'
 import BottomNav from '../components/BottomNav'
@@ -10,6 +10,18 @@ import ParkingZones from '../components/ParkingZones'
 import { IconPlay } from '../components/Icons'
 
 const DEFAULT_CENTER = [51.9225, 4.47917] // Rotterdam
+const GEO_OPTS = { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+
+function getCurrentPosition() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) return resolve(null)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => resolve([coords.latitude, coords.longitude]),
+      () => resolve(null),
+      GEO_OPTS
+    )
+  })
+}
 
 function FlyToLocation({ position }) {
   const map = useMap()
@@ -31,23 +43,29 @@ export default function Home() {
     if (getActiveSession()) { navigate('/session', { replace: true }); return }
     setProfile(p)
 
-    navigator.geolocation?.getCurrentPosition(
-      ({ coords }) => setLocation([coords.latitude, coords.longitude]),
-      () => {}
-    )
+    if (getSettings().location) {
+      navigator.geolocation?.getCurrentPosition(
+        ({ coords }) => setLocation([coords.latitude, coords.longitude]),
+        () => {},
+        GEO_OPTS
+      )
+    }
   }, [])
 
   async function handleStart() {
     setStarting(true)
     await requestPermission()
+    // Capture a fix at tap time so the session map works even if the prefetch
+    // hadn't resolved yet. Respects the location toggle in Settings.
+    const pos = getSettings().location ? (location ?? await getCurrentPosition()) : null
     setActiveSession({
       plate: profile.plate,
       startTime: new Date().toISOString(),
-      lat: location?.[0] ?? null,
-      lon: location?.[1] ?? null,
+      lat: pos?.[0] ?? null,
+      lon: pos?.[1] ?? null,
     })
-    notify('Parkeren gestart', `Kenteken ${profile.plate}`)
     navigate('/session')
+    notify('Parkeren gestart', `Kenteken ${profile.plate}`)
   }
 
   if (!profile) return null
